@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "yeswanthteja/java-microservice"
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git branch: 'develop', url: 'https://github.com/Yeswanthteja1010/java-microservice.git'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                dir('java-microservice') {
+                
+                    sh 'mvn clean install'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('java-microservice') {
+                    sh 'docker build -t yeswanthteja/java-microservice .'
+                }
+            }
+        }
+
+       stage('Push Docker Image') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'Docker_hub_cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+            sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+            sh "docker push $DOCKER_IMAGE"
+        }
+    }
+}
+
+
+        stage('Run Container') {
+            steps {
+                sh "docker run -d -p 9090:8080 $DOCKER_IMAGE"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: 'kubernetes_id', variable: 'KUBECONFIG')]) {
+                    dir('java-microservice') {
+                        sh '''
+                            kubectl apply -f k8s/deployment.yaml
+                            kubectl apply -f k8s/service.yaml
+                        '''
+                    }
+                }
+            }
+        }
+
+
+            
+        
+    }
+}
