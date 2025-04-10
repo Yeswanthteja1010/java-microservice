@@ -46,15 +46,18 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-    
-            steps {
-                dir('java-microservice') {
+    steps {
+        withCredentials([file(credentialsId: 'kubernetes_id', variable: 'KUBECONFIG')]) {
+            dir('java-microservice') {
                 sh '''
                     kubectl apply -f k8s/deployment.yaml
                     kubectl apply -f k8s/service.yaml
                 '''
-                }
             }
+        }
+    }
+}
+
 
             
         }
