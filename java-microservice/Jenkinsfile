@@ -44,5 +44,19 @@ pipeline {
                 sh "docker run -d -p 9090:8080 $DOCKER_IMAGE"
             }
         }
+
+        stage('Deploy to Kubernetes') {
+    
+            steps {
+                dir('java-microservice') {
+                sh '''
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
+                '''
+                }
+            }
+
+            
+        }
     }
 }
