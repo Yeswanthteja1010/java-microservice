@@ -14,7 +14,10 @@ pipeline {
 
         stage('Build with Maven') {
             steps {
-                echo 'mvn clean install'
+                dir('java-microservice') {
+                
+                    sh 'mvn clean install'
+                }
             }
         }
 
