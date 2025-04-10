@@ -20,7 +20,9 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t $DOCKER_IMAGE ."
+                dir('java-microservice') {
+                    sh 'docker build -t yeswanthteja/java-microservice .'
+                }
             }
         }
 
